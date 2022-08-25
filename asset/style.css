@@ -1,0 +1,51 @@
+html, body {margin: 0; height: 100%; overflow: hidden; text-align: center;}
+
+h1 {
+  color: #026076;
+  text-align: center;
+}
+
+h2 {
+  color: #242872;
+  text-align: center;
+}
+
+p {
+  line-height: 1.5em;
+}
+
+a {
+  color: dodgerblue;
+}
+
+b {
+  color: #242872;
+  }
+
+.arrow-up {
+  width: 0; 
+  height: 0; 
+  border-left: 1200px solid transparent;
+  border-right: 200px solid transparent;
+  border-top: 150px solid #242872;
+  z-index: -25;
+  position: absolute;
+}
+
+.arrow-left {
+  width: 0;
+  height: 0;
+  border-bottom: 1800px solid transparent;
+  border-right: 100px solid transparent;
+  border-left: 200px solid #189ce9;
+  z-index: -50;
+  position: absolute;
+}
+
+#div_g {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translate(-50%, -50%);
+  margin: 0 auto;
+}
