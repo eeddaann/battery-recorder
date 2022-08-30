@@ -5,6 +5,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"os"
 	"time"
 
 	socketio "github.com/googollee/go-socket.io"
@@ -15,6 +16,13 @@ func sendRandom() float64 {
 }
 
 func main() {
+	logFile, err := os.OpenFile("./log.txt", os.O_CREATE|os.O_APPEND|os.O_RDWR, 0644)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	log.SetOutput(logFile)
+	ArduinoPort := connectToArduino()
+	fmt.Println(ProbeArduino(ArduinoPort).temprature)
 	server := socketio.NewServer(nil)
 
 	server.OnConnect("/", func(s socketio.Conn) error {
@@ -35,8 +43,12 @@ func main() {
 
 	go func() {
 		for {
-			time.Sleep(time.Second / 5)
-			server.BroadcastToNamespace("/", "temp", fmt.Sprintf("%v", sendRandom()))
+			time.Sleep(time.Second / 4)
+			temperature := fmt.Sprintf("%v", ProbeArduino(ArduinoPort).temprature)
+			if temperature != "666" {
+				server.BroadcastToNamespace("/", "temp", temperature)
+			}
+			//server.BroadcastToNamespace("/", "temp", fmt.Sprintf("%v", 22))
 		}
 	}()
 
