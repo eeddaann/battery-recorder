@@ -1,4 +1,8 @@
-ifloat input_volt = 0.0;
+
+int val;
+int tempPin = 1;
+
+float input_volt = 0.0;
 float temp=0.0;
 float r1=1000.0;    //r1 value
 float r2=10000.0;      //r2 value
@@ -42,5 +46,5 @@ void loop()
   float farh = (cel*9)/5 + 32;
   Serial.print(cel, 6);
   Serial.println();
-  delay(100);
+  delay(50);
 }
