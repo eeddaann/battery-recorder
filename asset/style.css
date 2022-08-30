@@ -49,3 +49,48 @@ b {
   transform: translate(-50%, -50%);
   margin: 0 auto;
 }
+
+.Container {
+  background-color: rgb(238, 238, 238);
+  padding: 1rem;
+  border-radius: 0.5rem;
+}
+
+.Grid__Container {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 10px;
+}
+
+.Stat__Card {
+  padding: 1rem;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.15);
+}
+
+.Stat__Container {
+  display: flex;
+  flex-direction: column;
+}
+
+.Stat__Title {
+  color: #6c757d;
+}
+
+.Stat__Content {
+  font-size: 32px;
+  font-weight: 700;
+  color: #242872;
+}
+
+#temp_cnt {
+  color: green;
+}
+
+
+@media (min-width: 768px) {
+  .Grid__Container {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

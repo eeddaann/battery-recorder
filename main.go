@@ -21,8 +21,8 @@ func main() {
 		log.Fatalln(err)
 	}
 	log.SetOutput(logFile)
-	ArduinoPort := connectToArduino()
-	fmt.Println(ProbeArduino(ArduinoPort).temprature)
+	ArduinoPort := connectToArduino() // connect to arduino
+
 	server := socketio.NewServer(nil)
 
 	server.OnConnect("/", func(s socketio.Conn) error {
@@ -43,12 +43,14 @@ func main() {
 
 	go func() {
 		for {
-			time.Sleep(time.Second / 4)
-			temperature := fmt.Sprintf("%v", ProbeArduino(ArduinoPort).temprature)
-			if temperature != "666" {
-				server.BroadcastToNamespace("/", "temp", temperature)
+			time.Sleep(time.Second / 3) // sample arduino in 4Hz
+			res := ProbeArduino(ArduinoPort)
+			temperature := fmt.Sprintf("%v", res.temprature)
+			volt := fmt.Sprintf("%v", res.voltage)
+			if temperature != "666" { // ignore invalid data
+				server.BroadcastToNamespace("/", "temp", temperature+","+volt) // send data to client
+				//server.BroadcastToNamespace("/", "volt", volt)
 			}
-			//server.BroadcastToNamespace("/", "temp", fmt.Sprintf("%v", 22))
 		}
 	}()
 
