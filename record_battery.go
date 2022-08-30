@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/csv"
 	"fmt"
 	"log"
 	"os"
@@ -18,6 +19,7 @@ type recording struct {
 	StartTemp      float32
 	EndTemp        float32
 	LogPath        string
+	CSVwriter      *csv.Writer
 }
 
 func GetFilenameDate(r recording) string {
@@ -28,7 +30,7 @@ func GetFilenameDate(r recording) string {
 	// Use layout string for time format.
 	const layout = "01-02-2006"
 	// Place now in the string.
-	fname := r.BatterySerial + "-" + r.StartTime.Format(layout) + ".txt"
+	fname := r.BatterySerial + "-" + r.StartTime.Format(layout) + ".csv"
 	return filepath.Join(path, "data", fname)
 }
 
@@ -39,11 +41,18 @@ func startRecording(batterySerial string, startTemp float32, startVolt float32) 
 	r.StartVolt = startVolt
 	r.StartTime = time.Now()
 	r.LogPath = GetFilenameDate(r)
+	csvfile, err := os.OpenFile(r.LogPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatalf("failed creating file: %s", err)
+	}
+
+	r.CSVwriter = csv.NewWriter(csvfile)
 	log.Printf("starting to record: %v (%v volts) to: %v", r.BatterySerial, r.StartVolt, r.LogPath)
 	return &r
 }
 
 func finishRecording(r recording, endVolt float32, endTemp float32) {
+
 	r.EndTemp = endTemp
 	r.EndVolt = endVolt
 	r.EndTime = time.Now()

@@ -11,6 +11,9 @@ import (
 	socketio "github.com/googollee/go-socket.io"
 )
 
+var curRec *recording
+var lastValidRes = result{}
+
 func sendRandom() float64 {
 	return (rand.Float64() * 5) + 5
 }
@@ -23,13 +26,9 @@ func main() {
 	log.SetOutput(logFile)
 	ArduinoPort := connectToArduino() // connect to arduino
 
-	/*  test the metadata recording
 	res1 := ProbeArduino(ArduinoPort)
-	rec1 := startRecording("abc", float32(res1.temprature), float32(res1.voltage))
-	res2 := ProbeArduino(ArduinoPort)
-	time.Sleep(time.Second * 5)
-	finishRecording(*rec1, float32(res2.temprature), float32(res2.voltage))
-	*/
+	curRec = startRecording("abc", float32(res1.temprature), float32(res1.voltage))
+
 	server := socketio.NewServer(nil)
 
 	server.OnConnect("/", func(s socketio.Conn) error {
@@ -55,7 +54,12 @@ func main() {
 			temperature := fmt.Sprintf("%v", res.temprature)
 			volt := fmt.Sprintf("%v", res.voltage)
 			if temperature != "666" { // ignore invalid data
+				lastValidRes = res
 				server.BroadcastToNamespace("/", "temp", temperature+","+volt) // send data to client
+				if curRec.BatterySerial != "" {
+					_ = curRec.CSVwriter.Write([]string{fmt.Sprint(time.Now().Unix()), temperature, volt})
+					curRec.CSVwriter.Flush()
+				}
 			}
 		}
 	}()
