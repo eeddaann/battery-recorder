@@ -1,10 +1,21 @@
-int val;
-int tempPin = 1;
-
-float input_volt = 0.0;
+ifloat input_volt = 0.0;
 float temp=0.0;
 float r1=1000.0;    //r1 value
 float r2=10000.0;      //r2 value
+
+uint16_t readAnalog(uint8_t port)
+{
+        uint16_t x, samples;
+        uint32_t value;
+        value = 0; // init accumulator;
+        samples = 1000; // adjust this to your liking
+
+        for(x = 0; x < samples; x++) {
+                value += analogRead(port);
+        }
+
+        return (value / samples);
+}
 
 void setup()
 {
@@ -13,7 +24,8 @@ void setup()
 
 void loop()
 {
-    int analogvalue = analogRead(A2);
+
+    int analogvalue = readAnalog(A2);
     temp = (analogvalue * 5.0) / 1024.0;  // FORMULA USED TO CONVERT THE VOLTAGE
     input_volt = temp / (r2/(r1+r2));
     if (input_volt < 0.1) 
@@ -24,7 +36,7 @@ void loop()
     Serial.print(" ");
 
   
-  val = analogRead(tempPin);
+  val = readAnalog(tempPin);
   float mv = ( val/1024.0)*5000;
   float cel = mv/10;
   float farh = (cel*9)/5 + 32;
