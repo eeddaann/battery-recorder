@@ -56,7 +56,6 @@ func main() {
 			volt := fmt.Sprintf("%v", res.voltage)
 			if temperature != "666" { // ignore invalid data
 				server.BroadcastToNamespace("/", "temp", temperature+","+volt) // send data to client
-				//server.BroadcastToNamespace("/", "volt", volt)
 			}
 		}
 	}()

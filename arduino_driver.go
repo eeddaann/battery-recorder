@@ -38,8 +38,6 @@ func connectToArduino() serial.Port {
 	}
 	if len(ports) == 0 {
 		log.Fatal("No serial ports found!")
-	} else if len(ports) == 1 {
-		log.Print("one port found, assuming it's the arduino")
 	}
 	//TODO: add config for choosing the port
 	mode := &serial.Mode{
