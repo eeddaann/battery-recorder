@@ -23,6 +23,13 @@ func main() {
 	log.SetOutput(logFile)
 	ArduinoPort := connectToArduino() // connect to arduino
 
+	/*  test the metadata recording
+	res1 := ProbeArduino(ArduinoPort)
+	rec1 := startRecording("abc", float32(res1.temprature), float32(res1.voltage))
+	res2 := ProbeArduino(ArduinoPort)
+	time.Sleep(time.Second * 5)
+	finishRecording(*rec1, float32(res2.temprature), float32(res2.voltage))
+	*/
 	server := socketio.NewServer(nil)
 
 	server.OnConnect("/", func(s socketio.Conn) error {
