@@ -1,11 +1,13 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"go.bug.st/serial"
 )
@@ -28,36 +30,37 @@ func newResult(raw string) *result {
 	return &r
 }
 
-func connectToArduino() serial.Port {
+func connectToArduino() (serial.Port, error) {
 	ports, err := serial.GetPortsList()
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	for _, port := range ports {
 		log.Printf("Found port: %v\n", port)
 	}
 	if len(ports) == 0 {
-		log.Fatal("No serial ports found!")
+		return nil, errors.New("No serial ports found!")
 	}
 	//TODO: add config for choosing the port
 	mode := &serial.Mode{
 		BaudRate: 9600}
 	port, err := serial.Open(ports[0], mode)
 	if err != nil {
-		log.Fatal(err)
+		return nil, errors.New("error while trying to connect")
 	}
 	log.Printf("Connected successfully to the arduino on port: %v\n", ports[0])
-	return port
+	return port, nil
 }
 
-func ProbeArduino(port serial.Port) result {
+func ProbeArduino(port serial.Port) (result, error) {
 	raw := ""
 	buff := make([]byte, 30)
 	for {
 		// Reads up to 100 bytes
 		n, err := port.Read(buff)
 		if err != nil {
-			log.Fatal(err)
+			log.Printf("failed to read data: %v", err)
+			return result{}, errors.New("failed to read data")
 		}
 		if n == 0 {
 			fmt.Println("\nEOF")
@@ -71,5 +74,25 @@ func ProbeArduino(port serial.Port) result {
 			break
 		}
 	}
-	return *newResult(raw)
+	return *newResult(raw), nil
+}
+
+func reconnectToArduino() serial.Port {
+	timeout := 2 * time.Second
+	lock := false
+	port, err := connectToArduino()
+	if err != nil {
+		lock = true
+	}
+	for lock {
+		port, err = connectToArduino()
+		if err == nil {
+			lock = false
+		}
+		time.Sleep(timeout)
+		timeout *= 2
+		log.Printf("trying to reconnect in %v", timeout)
+	}
+	return port
+
 }

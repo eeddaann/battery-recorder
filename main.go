@@ -21,12 +21,19 @@ func sendRandom() float64 {
 func main() {
 	logFile, err := os.OpenFile("./log.txt", os.O_CREATE|os.O_APPEND|os.O_RDWR, 0644)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
+	} else {
+		log.SetOutput(logFile)
 	}
-	log.SetOutput(logFile)
-	ArduinoPort := connectToArduino() // connect to arduino
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	ArduinoPort := reconnectToArduino() // connect to arduino
 
-	res1 := ProbeArduino(ArduinoPort)
+	res1, err := ProbeArduino(ArduinoPort)
+	if err != nil {
+		log.Println(err)
+		ArduinoPort = reconnectToArduino()
+		res1 = *newResult("666 666")
+	}
 	curRec = startRecording("abc", float32(res1.temprature), float32(res1.voltage))
 
 	server := socketio.NewServer(nil)
@@ -50,14 +57,19 @@ func main() {
 	go func() {
 		for {
 			time.Sleep(time.Second / 3) // sample arduino in 4Hz
-			res := ProbeArduino(ArduinoPort)
+			res, err := ProbeArduino(ArduinoPort)
+			if err != nil {
+				log.Println(err)
+				ArduinoPort = reconnectToArduino()
+				res = result{}
+			}
 			temperature := fmt.Sprintf("%v", res.temprature)
 			volt := fmt.Sprintf("%v", res.voltage)
 			if temperature != "666" { // ignore invalid data
 				lastValidRes = res
 				server.BroadcastToNamespace("/", "temp", temperature+","+volt) // send data to client
 				if curRec.BatterySerial != "" {
-					_ = curRec.CSVwriter.Write([]string{fmt.Sprint(time.Now().Unix()), temperature, volt})
+					_ = curRec.CSVwriter.Write([]string{fmt.Sprint(time.Now().UnixMilli()), temperature, volt})
 					curRec.CSVwriter.Flush()
 				}
 			}
