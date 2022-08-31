@@ -28,6 +28,23 @@ var g = new Dygraph(document.getElementById("div_g"), data,
                       labels: ['Time', 'Temperature', 'Voltage']
                     });
 
+$('#recButton').addClass("notRec");
+
+$('#recCard').click(function(){
+	if($('#recButton').hasClass('notRec')){
+		$('#recButton').removeClass("notRec");
+		$('#recButton').addClass("Rec");
+    $('#rec-stat').text("Recording...");
+    $('#recCard').addClass("Rec");
+	}
+	else{
+		$('#recButton').removeClass("Rec");
+		$('#recButton').addClass("notRec");
+    $('#rec-stat').text("Start Recording");
+    $('#recCard').removeClass("Rec");
+	}
+});	
+
 
 var socket = io(); // create socket
 socket.on('temp', function(msg){
