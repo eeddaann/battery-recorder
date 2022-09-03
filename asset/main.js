@@ -1,4 +1,8 @@
-
+$( "#dialog" ).dialog(
+  { autoOpen: false,
+  draggable: false,
+  height: 400
+});
 // generate sample data and put it in array
 var data = [];
 
@@ -32,18 +36,54 @@ $('#recButton').addClass("notRec");
 
 $('#recCard').click(function(){
 	if($('#recButton').hasClass('notRec')){
-		$('#recButton').removeClass("notRec");
-		$('#recButton').addClass("Rec");
-    $('#rec-stat').text("Recording...");
-    $('#recCard').addClass("Rec");
+    // open dialog:
+    $( "#dialog" ).dialog( "open")
 	}
 	else{
-		$('#recButton').removeClass("Rec");
-		$('#recButton').addClass("notRec");
-    $('#rec-stat').text("Start Recording");
-    $('#recCard').removeClass("Rec");
+    endRecording()
 	}
-});	
+});
+
+$(function() {
+  $( "#autocomplete" ).autocomplete({
+     source: [
+        { label: "a", value: "a" },
+        { label: "b", value: "b" }
+     ]
+  });
+});
+
+$('#submit-serial').click(function () {
+  $.ajax({
+    url: 'newrec',
+    type: 'post',
+    dataType: 'html',
+    data : { serial: $('#autocomplete').val()},
+    success : function(data) {
+      // change button style:
+      $('#recButton').removeClass("notRec");
+      $('#recButton').addClass("Rec");
+      $('#rec-stat').text("Recording serial: "+$('#autocomplete').val());
+      $('#recCard').addClass("Rec");
+      $( "#dialog" ).dialog( "close")
+    },
+  });
+});
+
+function endRecording() {
+  $.ajax({
+    url: 'endrec',
+    type: 'get',
+    dataType: 'html',
+    success : function(data) {
+      // change button style:
+      $('#recButton').removeClass("Rec");
+      $('#recButton').addClass("notRec");
+      $('#rec-stat').text("Start Recording");
+      $('#recCard').removeClass("Rec");
+    },
+  });
+};
 
 
 var socket = io(); // create socket

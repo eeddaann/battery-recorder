@@ -48,10 +48,11 @@ func startRecording(batterySerial string, startTemp float32, startVolt float32) 
 
 	r.CSVwriter = csv.NewWriter(csvfile)
 	log.Printf("starting to record: %v (%v volts) to: %v", r.BatterySerial, r.StartVolt, r.LogPath)
+	fmt.Printf("starting to record: %v (%v volts) to: %v \n", r.BatterySerial, r.StartVolt, r.LogPath)
 	return &r
 }
 
-func finishRecording(r recording, endVolt float32, endTemp float32) {
+func finishRecording(r recording, endTemp float32, endVolt float32) {
 
 	r.EndTemp = endTemp
 	r.EndVolt = endVolt
@@ -70,4 +71,5 @@ func finishRecording(r recording, endVolt float32, endTemp float32) {
 		log.Println("failed to log recording:", err)
 	}
 	log.Printf("finished to record: %v after: %v", r.BatterySerial, r.ChargeDuration)
+	fmt.Printf("finished to record: %v after: %v\n", r.BatterySerial, r.ChargeDuration)
 }

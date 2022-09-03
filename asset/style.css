@@ -92,7 +92,7 @@ b {
 @media (min-width: 768px) {
   .Grid__Container {
     grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: 100px 100px;
+    grid-template-rows: 120px 120px;
   }
 }
 

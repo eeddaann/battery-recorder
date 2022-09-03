@@ -3,6 +3,8 @@
   <head>
     <title>battery recorder 🔋</title>
     <link rel="stylesheet" href="style.css">
+    <link href = "https://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css"
+         rel = "stylesheet">
   </head>
   <body>
     <div class="arrow-up"></div>
@@ -41,9 +43,18 @@
       </div>
     </div>
 
+    <div id="dialog" title="Start Recording">
+      <p>Enter battery serial number:</p>
+      <input id = "autocomplete">
+      <br>
+      <button type="submit" id="submit-serial">
+        Submit
+      </button>
+    </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dygraph/2.1.0/dygraph.min.js"></script>
     <script type="text/javascript"src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
     <script type="text/javascript"src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <script src = "https://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
     <script src="main.js"></script>
   </body>
 </html>
