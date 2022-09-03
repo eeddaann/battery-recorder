@@ -1,9 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
-	"math/rand"
 	"net/http"
 	"os"
 	"time"
@@ -11,27 +11,57 @@ import (
 	socketio "github.com/googollee/go-socket.io"
 )
 
-var curRec *recording
-var lastValidRes = result{}
-
-func sendRandom() float64 {
-	return (rand.Float64() * 5) + 5
-}
+var curRec *recording       // current recording
+var lastValidRes = result{} // last valid sensor readings
 
 func newRecordingRequest(w http.ResponseWriter, r *http.Request) {
+	// handels request for a new recording
 	if r.Method == "POST" {
-		batterySerial := r.FormValue("serial")
+		batterySerial := r.FormValue("serial") // get serial from the request
 		curRec = startRecording(batterySerial, float32(lastValidRes.temprature), float32(lastValidRes.voltage))
 	}
 }
 
 func endRecordingRequest(w http.ResponseWriter, r *http.Request) {
+	// handels request for end of recording
 	finishRecording(*curRec, float32(lastValidRes.temprature), float32(lastValidRes.voltage))
 	curRec = nil
 }
 
+func getStateRequest(w http.ResponseWriter, r *http.Request) {
+	// in case of browser refresh the client might lose sync, this function keep it in sync with the server
+	fmt.Println("method:", r.Method)
+	if r.Method == "GET" {
+		data := make(map[string]interface{})
+		if curRec == nil {
+			data = map[string]interface{}{
+				"isRecording": false,
+				"serials":     []string{"a", "b"},
+			}
+		} else {
+			data = map[string]interface{}{
+				"isRecording":        true,
+				"batterySerial":      curRec.BatterySerial,
+				"startRecordingTime": curRec.StartTime.Unix(),
+				"serials":            []string{"a", "b"},
+			}
+		}
+
+		jsonData, err := json.Marshal(data)
+		b, err := json.MarshalIndent(jsonData, "", "  ")
+		if err != nil {
+			log.Print(err)
+		}
+		fmt.Printf("%s\n", b)
+		// set header to 'application/json'
+		w.Header().Set("Content-Type", "application/json")
+		// write the response
+		w.Write(b)
+	}
+}
+
 func main() {
-	logFile, err := os.OpenFile("./log.txt", os.O_CREATE|os.O_APPEND|os.O_RDWR, 0644)
+	logFile, err := os.OpenFile("./log.txt", os.O_CREATE|os.O_APPEND|os.O_RDWR, 0644) // log to file
 	if err != nil {
 		log.Println(err)
 	} else {
@@ -60,11 +90,11 @@ func main() {
 
 	go func() {
 		for {
-			time.Sleep(time.Second / 3) // sample arduino in 4Hz
-			res, err := ProbeArduino(ArduinoPort)
+			time.Sleep(time.Second / 3)           // sample arduino in 3Hz
+			res, err := ProbeArduino(ArduinoPort) // try to probe arduino
 			if err != nil {
 				log.Println(err)
-				ArduinoPort = reconnectToArduino()
+				ArduinoPort = reconnectToArduino() // in case of error try to reconnect to arduino
 				res = result{}
 			}
 			temperature := fmt.Sprintf("%v", res.temprature)
@@ -84,6 +114,7 @@ func main() {
 
 	http.HandleFunc("/newrec", newRecordingRequest)
 	http.HandleFunc("/endrec", endRecordingRequest)
+	http.HandleFunc("/getstate", getStateRequest)
 	http.Handle("/socket.io/", server)
 	http.Handle("/", http.FileServer(http.Dir("./asset")))
 	log.Println("Serving at localhost:8000...")

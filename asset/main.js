@@ -3,6 +3,25 @@ $( "#dialog" ).dialog(
   draggable: false,
   height: 400
 });
+
+var startRecordingTime = -1
+var inter = -1
+
+$(document).ready(function () { 
+  $.ajax({
+    url: 'getstate',
+    type: 'get',
+    success : function(data) {
+      var actual = JSON.parse(atob(data))
+      console.log(actual.isRecording)
+      console.log(actual.serials)
+      if(actual.isRecording) {
+        displayRecording(actual.batterySerial)
+        startRecordingTime = actual.startRecordingTime
+      }
+    },
+  });
+});
 // generate sample data and put it in array
 var data = [];
 
@@ -61,10 +80,8 @@ $('#submit-serial').click(function () {
     data : { serial: $('#autocomplete').val()},
     success : function(data) {
       // change button style:
-      $('#recButton').removeClass("notRec");
-      $('#recButton').addClass("Rec");
-      $('#rec-stat').text("Recording serial: "+$('#autocomplete').val());
-      $('#recCard').addClass("Rec");
+      startRecordingTime = Date.now() / 1000
+      displayRecording($('#autocomplete').val())
       $( "#dialog" ).dialog( "close")
     },
   });
@@ -81,10 +98,39 @@ function endRecording() {
       $('#recButton').addClass("notRec");
       $('#rec-stat').text("Start Recording");
       $('#recCard').removeClass("Rec");
+      clearInterval(inter);
     },
   });
 };
 
+function displayRecording(serial) {
+  $('#recButton').removeClass("notRec");
+      $('#recButton').addClass("Rec");
+      $('#rec-stat').text("00:00:00 \nRecording battery: " + serial);
+      $('#recCard').addClass("Rec");
+      function foo () { 
+      $('#rec-stat').text(formatTime() + "\nRecording battery: " + serial);
+     }
+     inter = setInterval(foo, 1000);
+}
+
+function formatTime() {
+  d = (Date.now()/1000) - startRecordingTime
+  if(d <= 0){
+    return '00:00:00'
+  }else{
+   let h = Math.floor(d / 3600);
+   let m = Math.floor(d % 3600 / 60);
+   let s = Math.floor(d % 3600 % 60);
+
+   let hDisplay = h <= 9 ? '0'+ h+':' : h+ ":";
+   let mDisplay = m <= 9 ? '0'+ m+':' : m+ ":";
+   let sDisplay = s <= 9 ? '0'+ s : s;
+
+
+   return hDisplay + mDisplay + sDisplay; 
+  }
+}
 
 var socket = io(); // create socket
 socket.on('temp', function(msg){
