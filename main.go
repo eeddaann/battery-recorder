@@ -3,9 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	socketio "github.com/googollee/go-socket.io"
@@ -36,14 +38,14 @@ func getStateRequest(w http.ResponseWriter, r *http.Request) {
 		if curRec == nil {
 			data = map[string]interface{}{
 				"isRecording": false,
-				"serials":     []string{"a", "b"},
+				"serials":     getBatterySerials(),
 			}
 		} else {
 			data = map[string]interface{}{
 				"isRecording":        true,
 				"batterySerial":      curRec.BatterySerial,
 				"startRecordingTime": curRec.StartTime.Unix(),
-				"serials":            []string{"a", "b"},
+				"serials":            getBatterySerials(),
 			}
 		}
 
@@ -57,6 +59,38 @@ func getStateRequest(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		// write the response
 		w.Write(b)
+	}
+}
+
+func getBatterySerials() []string {
+	content, err := ioutil.ReadFile("battery-serials.txt")
+	if err != nil {
+		log.Println(err)
+		return []string{}
+	}
+	slc := strings.Split(string(content), "\n")
+	for i := range slc {
+		slc[i] = strings.TrimSpace(slc[i])
+	}
+	return slc
+}
+
+func AddBatterySerial(curSerial string) {
+	serials := getBatterySerials()
+	for _, v := range serials {
+		if v == curSerial {
+			return
+		}
+	}
+	f, err := os.OpenFile("./battery-serials.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Println(err)
+	}
+	if _, err := f.Write([]byte(fmt.Sprintf("%+v\n", curSerial))); err != nil {
+		log.Println(err)
+	}
+	if err := f.Close(); err != nil {
+		log.Println(err)
 	}
 }
 

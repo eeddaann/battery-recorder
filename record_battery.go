@@ -37,6 +37,7 @@ func GetFilenameDate(r recording) string {
 func startRecording(batterySerial string, startTemp float32, startVolt float32) *recording {
 	r := recording{}
 	r.BatterySerial = batterySerial
+	AddBatterySerial(batterySerial)
 	r.StartTemp = startTemp
 	r.StartVolt = startVolt
 	r.StartTime = time.Now()

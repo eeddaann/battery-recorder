@@ -1,13 +1,17 @@
-$( "#dialog" ).dialog(
-  { autoOpen: false,
-  draggable: false,
-  height: 400
-});
+
 
 var startRecordingTime = -1
 var inter = -1
 
 $(document).ready(function () { 
+  $( "#dialog" ).dialog(
+    { autoOpen: false,
+    draggable: false,
+    height: 400
+  });
+  
+  $( "#autocomplete" ).autocomplete();
+
   $.ajax({
     url: 'getstate',
     type: 'get',
@@ -15,6 +19,7 @@ $(document).ready(function () {
       var actual = JSON.parse(atob(data))
       console.log(actual.isRecording)
       console.log(actual.serials)
+      $( "#autocomplete" ).autocomplete( "option", "source", actual.serials );
       if(actual.isRecording) {
         displayRecording(actual.batterySerial)
         startRecordingTime = actual.startRecordingTime
@@ -62,7 +67,7 @@ $('#recCard').click(function(){
     endRecording()
 	}
 });
-
+/*
 $(function() {
   $( "#autocomplete" ).autocomplete({
      source: [
@@ -71,7 +76,7 @@ $(function() {
      ]
   });
 });
-
+*/
 $('#submit-serial').click(function () {
   $.ajax({
     url: 'newrec',
