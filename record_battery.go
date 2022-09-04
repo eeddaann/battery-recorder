@@ -61,11 +61,11 @@ func finishRecording(r recording, endTemp float32, endVolt float32) {
 	r.ChargeDuration = r.EndTime.Sub(r.StartTime)
 
 	// If the file doesn't exist, create it, or append to the file
-	f, err := os.OpenFile("./recordings.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	f, err := os.OpenFile("./recordings.csv", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Println("failed to log recording:", err)
 	}
-	if _, err := f.Write([]byte(fmt.Sprintf("%+v\n", r))); err != nil {
+	if _, err := f.Write([]byte(formatRecording(r))); err != nil {
 		log.Println("failed to log recording:", err)
 	}
 	if err := f.Close(); err != nil {
@@ -73,4 +73,27 @@ func finishRecording(r recording, endTemp float32, endVolt float32) {
 	}
 	log.Printf("finished to record: %v after: %v", r.BatterySerial, r.ChargeDuration)
 	fmt.Printf("finished to record: %v after: %v\n", r.BatterySerial, r.ChargeDuration)
+}
+
+func formatRecording(r recording) string {
+	st := ""
+	const layout = "2006-01-02 15:04:05"
+	// start time
+	st += r.StartTime.Format(layout) + ","
+	// battery serial
+	st += r.BatterySerial + ","
+	// charging duration
+	st += fmt.Sprintf("%s,", r.ChargeDuration.Round(time.Second))
+	// values at start and end
+	st += fmt.Sprintf("%v,", r.StartVolt)
+	st += fmt.Sprintf("%v,", r.EndVolt)
+	st += fmt.Sprintf("%v,", r.StartTemp)
+	st += fmt.Sprintf("%v,", r.EndTemp)
+	// end time
+	st += r.EndTime.Format(layout) + ","
+	// logfile
+	st += r.LogPath
+	// newline
+	st += "\n"
+	return st
 }
