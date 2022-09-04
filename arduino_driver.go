@@ -78,7 +78,7 @@ func ProbeArduino(port serial.Port) (result, error) {
 }
 
 func reconnectToArduino() serial.Port {
-	timeout := 2 * time.Second
+	timeout := 10 * time.Second
 	lock := false
 	port, err := connectToArduino()
 	if err != nil {
@@ -90,7 +90,6 @@ func reconnectToArduino() serial.Port {
 			lock = false
 		}
 		time.Sleep(timeout)
-		timeout *= 2
 		log.Printf("trying to reconnect in %v", timeout)
 	}
 	return port

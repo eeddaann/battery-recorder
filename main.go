@@ -152,5 +152,6 @@ func main() {
 	http.Handle("/socket.io/", server)
 	http.Handle("/", http.FileServer(http.Dir("./asset")))
 	log.Println("Serving at localhost:8000...")
+	fmt.Println("Serving at localhost:8000...")
 	log.Fatal(http.ListenAndServe(":8000", nil))
 }
