@@ -17,6 +17,8 @@ type result struct {
 	temprature float64
 }
 
+var r *regexp.Regexp
+
 func newResult(raw string) *result {
 	r := result{}
 	s := strings.Split(raw, " ")
@@ -31,6 +33,7 @@ func newResult(raw string) *result {
 }
 
 func connectToArduino() (serial.Port, error) {
+	r, _ = regexp.Compile("[0-9]{1,2}[,.][0-9]{6} [0-9]{1,2}[,.][0-9]{6}")
 	ports, err := serial.GetPortsList()
 	if err != nil {
 		return nil, err
@@ -69,8 +72,8 @@ func ProbeArduino(port serial.Port) (result, error) {
 
 		raw = string(buff[:n])
 		if strings.Contains(raw, "\n") {
-			r, _ := regexp.Compile("[0-9]{1,2}[,.][0-9]{6} [0-9]{1,2}[,.][0-9]{6}")
 			raw = r.FindString(raw)
+			port.ResetInputBuffer()
 			break
 		}
 	}
